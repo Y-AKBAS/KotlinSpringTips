@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.platform
+package com.yakbas.kotlinSpring.platform
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

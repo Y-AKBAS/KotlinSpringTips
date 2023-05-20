@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.common
+package com.yakbas.kotlinSpring.common
 
 interface Nameable {
     fun name(): String = this::class.java.simpleName

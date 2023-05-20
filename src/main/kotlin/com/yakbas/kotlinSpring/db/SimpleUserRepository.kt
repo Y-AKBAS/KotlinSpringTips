@@ -1,6 +1,6 @@
-package com.yakbas.kotlinSpring.playGround.db
+package com.yakbas.kotlinSpring.db
 
-import com.yakbas.kotlinSpring.playGround.db.mapper.UserMapper
+import com.yakbas.kotlinSpring.db.mapper.UserMapper
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 

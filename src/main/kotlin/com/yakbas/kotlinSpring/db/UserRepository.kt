@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.db
+package com.yakbas.kotlinSpring.db
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository

@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.db
+package com.yakbas.kotlinSpring.db
 
 class TestUser(
     var id: Long?,

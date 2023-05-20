@@ -1,9 +1,9 @@
-package com.yakbas.kotlinSpring.playGround.db
+package com.yakbas.kotlinSpring.db
 
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.NoRepositoryBean
 
 @NoRepositoryBean
-open class DelegatingRepo<ENTITY, ID, REPOSITORY: CrudRepository<ENTITY, ID>>(
+open class DelegatingRepo<ENTITY, ID, REPOSITORY : CrudRepository<ENTITY, ID>>(
     protected val repository: REPOSITORY
-): CrudRepository<ENTITY, ID> by repository
+) : CrudRepository<ENTITY, ID> by repository

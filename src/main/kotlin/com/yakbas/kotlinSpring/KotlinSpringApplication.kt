@@ -1,6 +1,5 @@
 package com.yakbas.kotlinSpring
 
-import com.yakbas.kotlinSpring.playGround.platform.Platform
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 

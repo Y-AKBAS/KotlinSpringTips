@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.db
+package com.yakbas.kotlinSpring.db
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table

@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.platform
+package com.yakbas.kotlinSpring.platform
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -16,7 +16,7 @@ sealed class Platform {
 
         @Autowired
         fun findPlatform(@Value("\${app.platform}") platformStr: String) {
-            this.platform = if (platformStr == "eu") EU else NA
+            platform = if (platformStr == "eu") EU else NA
         }
 
         override fun name(): String = platform.name()

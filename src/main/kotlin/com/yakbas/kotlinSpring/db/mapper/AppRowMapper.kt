@@ -1,4 +1,4 @@
-package com.yakbas.kotlinSpring.playGround.db.mapper
+package com.yakbas.kotlinSpring.db.mapper
 
 import org.springframework.jdbc.core.RowMapper
 

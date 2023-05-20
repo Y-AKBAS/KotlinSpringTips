@@ -9,8 +9,4 @@ class KotlinSpringApplication
 
 fun main(args: Array<String>) {
     runApplication<KotlinSpringApplication>(*args)
-
-    println(Platform.name())
-    println(Platform.isEu())
-    println(Platform.isNa())
 }

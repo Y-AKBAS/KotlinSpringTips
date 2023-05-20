@@ -1,0 +1,16 @@
+package com.yakbas.kotlinSpring
+
+import com.yakbas.kotlinSpring.playGround.platform.Platform
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+
+@SpringBootApplication
+class KotlinSpringApplication
+
+fun main(args: Array<String>) {
+    runApplication<KotlinSpringApplication>(*args)
+
+    println(Platform.name())
+    println(Platform.isEu())
+    println(Platform.isNa())
+}

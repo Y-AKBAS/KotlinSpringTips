@@ -1,0 +1,14 @@
+server:
+  port: 8099
+
+spring:
+  application:
+    name: kotlin-spring
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kotlin
+    driver-class-name: org.postgresql.Driver
+    username:
+    password:
+
+app:
+  platform: eu

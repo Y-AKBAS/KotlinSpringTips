@@ -11,7 +11,7 @@ class TestUserEntity(
     var employeeType: EmployeeType?
 )
 
-enum class EmployeeType{
+enum class EmployeeType {
     SOFTWARE_ENGINEER,
     PAYROLL_SPECIALIST
 }

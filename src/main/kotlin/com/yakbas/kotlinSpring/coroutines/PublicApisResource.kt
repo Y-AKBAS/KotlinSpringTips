@@ -12,7 +12,7 @@ class PublicApisResource(private val coroutineService: CoroutineService) {
 
     @GetMapping("/sync")
     fun sync(): ResponseEntity<PublicApiResult> {
-        val result = coroutineService.get()
+        val result = coroutineService.getSync()
         return ResponseEntity.ok().body(result)
     }
 

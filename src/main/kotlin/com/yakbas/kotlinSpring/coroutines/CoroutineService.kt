@@ -1,34 +1,33 @@
 package com.yakbas.kotlinSpring.coroutines
 
 import com.yakbas.kotlinSpring.common.Client
-import com.yakbas.kotlinSpring.common.measureTime
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
+import kotlin.system.measureTimeMillis
 
 @Service
-class CoroutineService(private val client: Client) {
+class CoroutineService(private val client: Client, private val dispatchers: AppCoroutineDispatcher) {
 
-    fun get(): PublicApiResult {
+    fun getSync(): PublicApiResult {
         var result = PublicApiResult(count = 0, entries = emptyList())
 
-        measureTime("Passed time in normal:") {
+        val millis = measureTimeMillis {
             repeat(3) { result += client.get() }
         }
+        println("Passed time in sync: $millis")
         return result
     }
 
-    fun getAsync(): PublicApiResult {
+    fun getAsync(): PublicApiResult = runBlocking(dispatchers.dispatcher) {
         var result = PublicApiResult(count = 0, entries = emptyList())
-
-        var deferredList: List<Deferred<PublicApiResult>> = emptyList()
-        measureTime("Passed time in async:") {
-            val job = CoroutineScope(Dispatchers.IO).launch {
-                deferredList = List(3) { async { client.get() } }
-                deferredList.awaitAll().forEach { result += it }
-            }
-            runBlocking{job.join()}
+        val millis = measureTimeMillis {
+            val deferredList = List(3) { async { client.get() } }
+            deferredList.awaitAll().forEach { result += it }
         }
-
-        return result
+        println("passed time in async: $millis")
+        return@runBlocking result
     }
+
 }

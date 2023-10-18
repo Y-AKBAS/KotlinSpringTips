@@ -10,5 +10,3 @@ spring:
     username:
     password:
 
-app:
-  platform: eu

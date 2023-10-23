@@ -1,5 +1,3 @@
-use kotlin;
-
 CREATE TABLE test_user(
     id bigint generated always as identity,
     name varchar(50),

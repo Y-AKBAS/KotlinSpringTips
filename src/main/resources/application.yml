@@ -5,8 +5,7 @@ spring:
   application:
     name: kotlin-spring
   datasource:
-    url: jdbc:postgresql://localhost:5432/kotlin
+    url: jdbc:postgresql://localhost:5432/kotlin_spring
     driver-class-name: org.postgresql.Driver
     username:
     password:
-

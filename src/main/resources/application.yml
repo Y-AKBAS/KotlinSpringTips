@@ -9,3 +9,8 @@ spring:
     driver-class-name: org.postgresql.Driver
     username:
     password:
+  flyway:
+    clean-disabled: false
+    enabled: false
+    fail-on-missing-locations: true
+    validate-migration-naming: true

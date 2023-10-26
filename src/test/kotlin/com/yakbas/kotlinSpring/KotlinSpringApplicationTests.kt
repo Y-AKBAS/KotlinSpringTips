@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import javax.crypto.spec.SecretKeySpec
 
-@SpringBootTest(properties = ["spring.profiles.active=dev"], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(properties = ["spring.profiles.active=dev"],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class KotlinSpringApplicationTests {
 
     @Autowired
@@ -40,8 +41,13 @@ class KotlinSpringApplicationTests {
     fun `that the password base encryption works`() {
         val initialText = "This is my text to encrypt"
         val password = "$%gsdgFENDrt!!:,V."
+        val iv = aesEncryptionService.generateBytes(AESEncryptionService.IV_LENGTH)
         val salt = aesEncryptionService.generateBytes(AESEncryptionService.SALT_LENGTH)
         val key = aesEncryptionService.generateKeyFromPassword(password, salt)
+        val result = aesEncryptionService.encryptAndMergeIv(initialText, key, iv = iv, salt = salt)
+        val decryptedBytes = aesEncryptionService.decryptCipherWithIvAndSalt(result, key)
+        val decryptedText = String(decryptedBytes, Charsets.UTF_8)
+        Assertions.assertEquals(initialText, decryptedText)
     }
 
 }

@@ -27,7 +27,7 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
         private const val CIPHER_ALGO = "$ALGO/GCM/NoPadding"
         private const val SECRET_KEY_FACTORY_ALGO = "PBKDF2WithHmacSHA256"
         private const val DEFAULT_KEY_SIZE = 256 // Bit
-        private const val IV_LENGTH = 12 // byte
+        const val IV_LENGTH = 12 // byte
         const val SALT_LENGTH = 16 // byte
         private const val TAG_SIZE = 128 // Bit
         private const val ITERATION_COUNT = 65536
@@ -80,6 +80,15 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
         return decrypt(cipher, key, iv)
     }
 
+    fun decryptCipherWithIvAndSalt(cipherText: ByteArray, key: SecretKey): ByteArray {
+        val buffer = ByteBuffer.wrap(cipherText)
+        val iv = ByteArray(IV_LENGTH).apply { buffer.get(this) }
+        val salt = ByteArray(SALT_LENGTH).apply { buffer.get(this) }
+        val cipher = ByteArray(buffer.remaining()).apply { buffer.get(this) }
+
+        return decrypt(cipher, key, iv)
+    }
+
     fun generateKey(keySize: Int = DEFAULT_KEY_SIZE): SecretKey {
         return KeyGenerator.getInstance(ALGO).apply {
             this.init(keySize, secureRandom)
@@ -93,5 +102,4 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
     }
 
     fun generateBytes(size: Int) = ByteArray(size).apply { secureRandom.nextBytes(this) }
-
 }

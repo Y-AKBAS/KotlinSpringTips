@@ -8,6 +8,7 @@ import java.util.*
 
 
 fun main() {
+    printProviders()
 }
 
 fun hash(text: String): String {

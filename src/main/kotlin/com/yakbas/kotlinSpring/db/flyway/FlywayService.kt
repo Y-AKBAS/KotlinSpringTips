@@ -1,8 +1,9 @@
 package com.yakbas.kotlinSpring.db.flyway
 
+import com.yakbas.kotlinSpring.common.AppProperties
+import com.yakbas.kotlinSpring.common.createLogger
 import org.flywaydb.core.Flyway
 import org.springframework.stereotype.Service
-import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.output.CleanResult
 import org.flywaydb.core.api.output.MigrateResult
 import org.springframework.beans.factory.annotation.Autowired

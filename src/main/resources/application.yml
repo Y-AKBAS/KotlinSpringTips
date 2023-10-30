@@ -14,3 +14,6 @@ spring:
     enabled: false
     fail-on-missing-locations: true
     validate-migration-naming: true
+
+app:
+  resetDbSchemas: true

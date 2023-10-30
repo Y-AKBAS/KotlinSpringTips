@@ -1,6 +1,7 @@
 package com.yakbas.kotlinSpring
 
 import com.yakbas.kotlinSpring.encryption.AESEncryptionService
+import com.yakbas.kotlinSpring.encryption.RSAEncryptionService
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,6 +14,9 @@ class KotlinSpringApplicationTests {
 
     @Autowired
     private lateinit var aesEncryptionService: AESEncryptionService
+
+    @Autowired
+    private lateinit var rsaEncryptionService: RSAEncryptionService
 
     @Test
     fun `that the aes encryption works`() {

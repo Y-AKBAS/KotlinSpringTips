@@ -29,7 +29,7 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
         private const val DEFAULT_KEY_SIZE = 256 // Bit
         const val IV_LENGTH = 12 // byte
         const val SALT_LENGTH = 16 // byte
-        private const val TAG_SIZE = 128 // Bit
+        private const val TAG_SIZE = 128 // bit
         private const val ITERATION_COUNT = 65536
     }
 

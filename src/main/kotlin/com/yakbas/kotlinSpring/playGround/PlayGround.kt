@@ -1,5 +1,8 @@
 package com.yakbas.kotlinSpring.playGround
 
+import com.yakbas.kotlinSpring.encryption.ecc.ECC
+import com.yakbas.kotlinSpring.encryption.ecc.Point
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.Provider
@@ -8,7 +11,10 @@ import java.util.*
 
 
 fun main() {
-    printProviders()
+    val ecc = ECC(BigDecimal(3), BigDecimal(7))
+    val generator = Point(BigDecimal(1), BigDecimal(1))
+    println(ecc.doubleAndAdd(100, generator))
+   // printProviders()
 }
 
 fun hash(text: String): String {
@@ -23,4 +29,3 @@ fun printProviders() {
             it.services.map(Provider.Service::getAlgorithm)
         }.forEach(::println)
 }
-

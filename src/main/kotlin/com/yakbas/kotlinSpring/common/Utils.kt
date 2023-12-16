@@ -8,13 +8,8 @@ import java.util.*
 
 fun <T : Any> T.createLogger(): Logger = LoggerFactory.getLogger(this.javaClass)
 
-fun measureTime(message: String = "", block: () -> Unit) {
-    val start = System.currentTimeMillis()
-    block()
-    println("$message ${System.currentTimeMillis() - start}")
-}
 
-inline fun <T> orNull(get: () -> T?, logError: Boolean = false, loggerName: String? = null): T? = try {
+inline fun <T> getOrNull(get: () -> T?, logError: Boolean = false, loggerName: String? = null): T? = try {
     get()
 } catch (ex: Exception) {
     if (logError) {
@@ -22,6 +17,31 @@ inline fun <T> orNull(get: () -> T?, logError: Boolean = false, loggerName: Stri
         logger.warn("", ex)
     }
     null
+}
+
+inline fun <T> getOrThrow(get: () -> T?, exSupplier: (Throwable) -> Throwable): T = try {
+    checkNotNull(get()) { "Failed get() because of null result" }
+} catch (ex: Exception) {
+    throw exSupplier(ex)
+}
+
+inline fun <T> getOrHandle(get: () -> T?, exHandler: (Throwable) -> Unit): T? = try {
+    get()
+} catch (ex: Exception) {
+    exHandler(ex)
+    null
+}
+
+inline fun runOrThrow(run: () -> Unit, exSupplier: (Throwable) -> Throwable) = try {
+    run()
+} catch (ex: Exception) {
+    throw exSupplier(ex)
+}
+
+inline fun runOrHandle(run: () -> Unit, handler: (Throwable) -> Unit) = try {
+    run()
+} catch (ex: Exception) {
+    handler(ex)
 }
 
 fun UUID.toByteArray(): ByteArray {

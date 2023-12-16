@@ -40,14 +40,6 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
         return EncryptionResult(key, cipher)
     }
 
-    fun encrypt(text: String, key: SecretKey, iv: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(CIPHER_ALGO).apply {
-            init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
-        }
-
-        return cipher.doFinal(text.toByteArray(Charsets.UTF_8))
-    }
-
     fun encryptAndMergeIv(text: String, key: SecretKey, iv: ByteArray): ByteArray {
         val encryptedBytes = encrypt(text, key, iv)
         return ByteBuffer.allocate(encryptedBytes.size + iv.size)
@@ -57,7 +49,7 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
     }
 
     fun encryptAndMergeIv(text: String, key: SecretKey, iv: ByteArray, salt: ByteArray): ByteArray {
-        val encryptedBytes = encrypt(text, key, iv)
+        val encryptedBytes = encrypt(text, key, iv, salt)
         return ByteBuffer.allocate(encryptedBytes.size + iv.size + salt.size)
             .put(iv)
             .put(salt)
@@ -65,11 +57,14 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
             .array()
     }
 
-    fun decrypt(cipherText: ByteArray, key: SecretKey, iv: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(CIPHER_ALGO).apply {
-            init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
-        }
-        return cipher.doFinal(cipherText)
+    fun encrypt(text: String, key: SecretKey, iv: ByteArray): ByteArray {
+        val cipher = getEncryptCipher(key, iv)
+        return cipher.doFinal(text.toByteArray(Charsets.UTF_8))
+    }
+
+    fun encrypt(text: String, key: SecretKey, iv: ByteArray, salt: ByteArray): ByteArray {
+        val cipher = getEncryptCipher(key, iv)
+        return cipher.doFinal(salt.plus(text.toByteArray(Charsets.UTF_8)))
     }
 
     fun decryptCipherWithIv(cipherText: ByteArray, key: SecretKey): ByteArray {
@@ -86,7 +81,15 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
         val salt = ByteArray(SALT_LENGTH).apply { buffer.get(this) }
         val cipher = ByteArray(buffer.remaining()).apply { buffer.get(this) }
 
-        return decrypt(cipher, key, iv)
+        val decryptedBytes = ByteBuffer.wrap(decrypt(cipher, key, iv)).get(salt)
+        return ByteArray(decryptedBytes.remaining()).apply { decryptedBytes.get(this) }
+    }
+
+    fun decrypt(cipherText: ByteArray, key: SecretKey, iv: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(CIPHER_ALGO).apply {
+            init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
+        }
+        return cipher.doFinal(cipherText)
     }
 
     fun generateKey(keySize: Int = DEFAULT_KEY_SIZE): SecretKey {
@@ -102,4 +105,10 @@ class AESEncryptionService(private val secureRandom: SecureRandom) {
     }
 
     fun generateBytes(size: Int) = ByteArray(size).apply { secureRandom.nextBytes(this) }
+
+    private fun getEncryptCipher(key: SecretKey, iv: ByteArray): Cipher {
+        return Cipher.getInstance(CIPHER_ALGO).apply {
+            init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_SIZE, iv))
+        }
+    }
 }

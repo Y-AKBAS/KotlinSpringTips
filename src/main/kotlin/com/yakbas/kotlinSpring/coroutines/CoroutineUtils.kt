@@ -1,15 +1,17 @@
 package com.yakbas.kotlinSpring.coroutines
 
-import com.yakbas.kotlinSpring.common.createLogger
+import com.yakbas.kotlinSpring.common.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+import org.slf4j.Logger
 
 class AsyncResult<out T : Any?>(val value: T?, val isSuccess: Boolean)
 
+class FailedCoroutineException(logger: Logger, message: String, throwable: Throwable?) : Exception(message, throwable)
 
 object CoroutineUtils {
 
-    private val logger = createLogger()
+    val logger = createLogger()
 
     inline fun <T> launchAndProcessIO(
         blocks: List<suspend () -> AsyncResult<T>>,
@@ -31,7 +33,7 @@ object CoroutineUtils {
 
     suspend inline fun <T> sendChannelWrapper(
         channel: SendChannel<AsyncResult<T>?>,
-        func: suspend () -> AsyncResult<T>
+        crossinline func: suspend () -> AsyncResult<T>
     ) {
         try {
             channel.send(func())
@@ -54,18 +56,36 @@ object CoroutineUtils {
         }
     }
 
-
     inline fun <R : Any?> consumeBlockingAsyncIO(
         blocks: List<suspend () -> AsyncResult<R>>,
-        crossinline consumer: suspend (AsyncResult<R>) -> Unit
-    ) =
-        runBlocking(Dispatchers.IO) {
-            supervisorScope {
-                blocks.map { async { it() } }
-                    .mapNotNull { extractDeferredWithJoin(it) }
-                    .forEach { launch { consumer(it) } }
+        crossinline consumer: suspend (AsyncResult<R>) -> Unit,
+        failFast: Boolean = false
+    ) = runBlocking(Dispatchers.IO) {
+        supervisorScope {
+
+            val asyncResults = blocks
+                .map { async { it() } }
+                .mapNotNull { extractDeferred(it, failFast) }
+
+            if (failFast) {
+                runOrThrow({ asyncResults.forEach { launch { consumer(it) } } }) { throwable ->
+                    FailedCoroutineException(
+                        logger,
+                        "Failed launch coroutine.",
+                        throwable
+                    )
+                }
+            } else {
+                runOrHandle({ asyncResults.forEach { launch { consumer(it) } } }) { throwable ->
+                    logger.error(
+                        "",
+                        throwable
+                    )
+                }
             }
+
         }
+    }
 
     inline fun <R> supplyBlockingIO(crossinline supplier: suspend CoroutineScope.() -> R) =
         runBlocking(Dispatchers.IO) {
@@ -74,40 +94,56 @@ object CoroutineUtils {
             }
         }
 
-    fun <R : Any?> supplyBlockingAsyncIO(blocks: List<suspend () -> R?>) = runBlocking(Dispatchers.IO) {
-        require(blocks.size >= 2) { "No need to block for less than 2 functions!" }
-        val result = supervisorScope {
-            val asyncBlocks = blocks.map { async { it() } }
-            return@supervisorScope asyncBlocks.map { extractDeferredWithJoin(it) }
-        }
+    fun <R : Any?> supplyBlockingAsyncIO(blocks: List<suspend () -> R?>, failFast: Boolean = false) =
+        runBlocking(Dispatchers.IO) {
+            val result = supervisorScope {
+                val asyncBlocks = blocks.map { async { it() } }
+                return@supervisorScope asyncBlocks.map { extractDeferred(it, failFast) }
+            }
 
-        return@runBlocking result
-    }
+            return@runBlocking result
+        }
 
     inline fun <F : Any?, S : Any?> supplyBlockingAsyncPairIO(
         crossinline first: suspend () -> F?,
-        crossinline second: suspend () -> S?
-    ) = runBlocking(Dispatchers.IO) {
-        val result = supervisorScope {
-            val firstAsync = async { first() }
-            val secondAsync = async { second() }
+        crossinline second: suspend () -> S?,
+        failFast: Boolean = false
+    ) =
+        runBlocking(Dispatchers.IO) {
+            val result = supervisorScope {
+                val firstAsync = async { first() }
+                val secondAsync = async { second() }
 
-            val firstResult = extractDeferredWithJoin(firstAsync)
-            val secondResult = extractDeferredWithJoin(secondAsync)
+                val firstResult = extractDeferred(firstAsync, failFast)
+                val secondResult = extractDeferred(secondAsync, failFast)
 
-            return@supervisorScope firstResult to secondResult
+                return@supervisorScope firstResult to secondResult
+            }
+
+            return@runBlocking result
         }
 
-        return@runBlocking result
-    }
-
-    // Calling directly await and not using supervisor job propagates the exception to parent and the whole coroutines block gets cancelled.
-    // To prevent it use this function inside a supervisorScope{}
-    suspend fun <R : Any?> extractDeferredWithJoin(deferred: Deferred<R>): R? {
-        deferred.join()
-        return if (!deferred.isCancelled) deferred.await() else {
-            deferred.invokeOnCompletion { throwable -> if (throwable != null) logger.error("", throwable) }
-            null
+    // not using supervisor job propagates the exception to parent and the whole coroutines block gets cancelled.
+    // To prevent it use this function inside a supervisorScope{}.
+    // If the failfast flag is set to true. The whole coroutine blocks get cancelled.
+    suspend fun <R : Any?> extractDeferred(deferred: Deferred<R>, failFast: Boolean = false): R? {
+        return if (failFast) {
+            getOrThrow({ deferred.await() }) { throwable ->
+                FailedCoroutineException(
+                    logger,
+                    "Failed async coroutine.",
+                    throwable
+                )
+            }
+        } else {
+            getOrHandle({ deferred.await() }) { _ ->
+                deferred.invokeOnCompletion { throwable ->
+                    if (throwable != null) logger.error(
+                        "",
+                        throwable
+                    )
+                }
+            }
         }
     }
 }

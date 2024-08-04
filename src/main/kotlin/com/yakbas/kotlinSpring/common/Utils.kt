@@ -60,3 +60,36 @@ fun ByteArray.toUuidString(): String {
         UUID(it.getLong(), it.getLong())
     }.toString()
 }
+
+interface MutableFixedSizeCache<E : Any> : ReadOnlyFixedSizeCache<E> {
+    fun add(item: Set<E>)
+}
+
+interface ReadOnlyFixedSizeCache<E : Any> : Iterable<Set<E>> {
+    fun flatten(): Set<E>
+}
+
+class FixedSizeCache<E : Any>(maxSize: Int) : MutableFixedSizeCache<E> {
+    private val replaySize = maxSize.also { require(it > 0) { "Size should be greater than 0!" } }
+    private val replayCache: ConcurrentLinkedDeque<Set<E>> = ConcurrentLinkedDeque()
+
+    override fun add(item: Set<E>) = synchronized(this) {
+        require(item.isNotEmpty()) { "Item cannot be empty!" }
+        if (replayCache.size >= replaySize) {
+            replayCache.removeFirst()
+        }
+
+        replayCache.addLast(item)
+    }
+
+    override fun iterator(): Iterator<Set<E>> {
+        return replayCache.iterator()
+    }
+
+    override fun flatten(): Set<E> {
+        if (replayCache.isEmpty()) return emptySet()
+        val elements = this.replayCache.toList()
+        val totalSize = elements.fold(0) { acc, e -> acc.also { it + e.size } }
+        return elements.flatMapTo(HashSet(totalSize)) { it }
+    }
+}

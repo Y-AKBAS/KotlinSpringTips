@@ -8,7 +8,21 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/coroutines")
-class PublicApisResource(private val coroutineService: CoroutineService) {
+class PublicApisResource(private val coroutineService: CoroutineService, private val ctx: ApplicationContext) {
+
+    
+    @PostConstruct
+    fun dumpHandlerMappings() {
+        println("=== Handler Mappings ===")
+        ctx.getBeansOfType(RequestMappingInfoHandlerMapping::class.java)
+            .values
+            .forEach { mapping ->
+                mapping.handlerMethods.forEach { (info, method) ->
+                    println("${info.methodsCondition} ${info.patternsCondition} -> ${method.beanType.simpleName}.${method.method.name}")
+                }
+            }
+        println("=== End Handler Mappings ===")
+    }
 
     @GetMapping("/sync")
     fun sync(): ResponseEntity<PublicApiResult> {
